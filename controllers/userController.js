@@ -390,7 +390,7 @@ const registerUser = asyncHandler(async (req, res) => {
     trxwalletaddressbase58,
     trxwalletaddresshex,
     trxwalletprivatekey,
-    emailcode: uuidv4(),
+    emailcode: v4(),
     pic
   });
 
