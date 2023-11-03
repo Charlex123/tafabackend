@@ -9,14 +9,20 @@ const {
   assetDetails,
   updateTransactionPin,
   updateAssetWithdrawalStatus,
-  resetPassword
+  resetPassword,
+  checkEmail,
+  checkUserName,
+  activateAccount
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/verify", verifyUser);
-router.post("/regsuccess", resendverificationMail);
+router.post("/activateaccount", activateAccount);
+router.post("/checkemail", checkEmail);
+router.post("/checkusername", checkUserName);
+router.post("/resendverifyemail", resendverificationMail);
 router.post("/resetpassword", resetPassword);
 router.post("/addfunds", addAssets);
 router.post("/assetdetails", assetDetails);

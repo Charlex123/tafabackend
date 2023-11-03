@@ -3,46 +3,35 @@ const User = require("../models/userModel.js");
 const Referral = require("../models/referralModel.js");
 const Assets = require("../models/assetsModel.js");
 const generateToken = require("../utils/generateToken.js");
+const generateRanNum = require("../utils/generateRanNum.js");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
-const v4 = require("uuid");
-const sgTransport = require("nodemailer-sendgrid-transport");
+const { v4: uuidv4 } = require("uuid");
+// const sgTransport = require("nodemailer-sendgrid-transport");
 dotenv.config();
 
-
+console.log(generateRanNum())
+console.log('uuidv4',uuidv4())
 // async..await is not allowed in global scope, must use a wrapper
   // create reusable transporter object using the default SMTP transport
+  // const frontendurl = process.env.FRONTEND_URL;
+  // console.log('frontend url',frontendurl)
+
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: "tafaxtradapp@gmail.com",
+      pass: "jpmr rzig dgcr rpqu",
+    },
+  });
 
 
-  // let transporter = nodemailer.createTransport({
-  //   host: "palegor.com",
-  //   port: 587,
-  //   auth: {
-  //     user: process.env.AUTH_EMAIL, // generated ethereal user
-  //     pass: process.env.AUTH_PASS, // generated ethereal password
-  //   }
-  // });
-
-
-  // var options = {
-  //   auth: {
-  //     api_user: process.env.AUTH_USRER,
-  //     api_key: process.env.AUTH_PASS
-  //   }
-  // }
   
-  // var client = nodemailer.createTransport(sgTransport(options));
-  
-  // var email = {
-  //   from: 'awesome@bar.com',
-  //   to: 'mr.walrus@foo.com',
-  //   subject: 'Hello',
-  //   text: 'Hello world',
-  //   html: '<b>Hello world</b>'
-  // };
-  
-  // client.sendMail(email, function(err, info){
+  // transporter.sendMail(email, function(err, info){
   //     if (err ){
   //       console.log(err);
   //     }
@@ -51,66 +40,152 @@ dotenv.config();
   //     }
   // });
 
-  // transporter.verify((error, success) => {
-  //   if(error) {
-  //    console.log(error) 
-  //   }else {
-  //     console.log("ready for message");
-  //     console.log(success);
-  //   }
-  // })
+  transporter.verify((error, success) => {
+    if(error) {
+     console.log(error) 
+    }else {
+      console.log("ready for message");
+      console.log(success);
+    }
+  })
 
   
-  // const sendverificationMail = (_id,username,emailCode,email) => {
+  const sendverificationMail = (_id,username,emailCode,email,res) => {
       
-  //   const currentUrl = "http://localhost:5000/";
-  //   const mailOptions = {
-  //     from: process.env.AUTH_EMAIL,
-  //     to: email,
-  //     subject: "Confirm Your Email",
-  //     html: `<div><p>Hello ${username}, you have signed up with PALEGO, the best crypto trading bot. Thank you for tusting us with you funds and we will not disappoint</p>
-  //     <p>Confirm your email with the link below to have access to our platform <br/>
-  //       <a href=${currentUrl+"user/verify/"+_id+"/"+emailCode}>Confirm Email</a>
-  //     </p>
-  //     </div>`,
-  //   }
+    const mailOptions = {
+      from: process.env.AUTH_EMAIL,
+      to: email,
+      subject: "Confirm Your Email",
+      html: `<html>
+          <head>
+          <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+          <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+          <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+          <style type='text/css'>
+              body {
+                  font-family: Tahoma;color: #545454;font-weight: 400;font-size: 14px;
+              }
+              .btn-c {
+                  width: 100%;margin: 10px auto;text-align: center;cursor: pointer;
+              }
+              .btn-c a {
+                  cursor: pointer !important;
+              }
+              .btn-c a button {
+                  cursor: pointer !important;
+              }
+              span {
+                text-transform: capitalize;
+              }
+              div {
+                  color: #545454;font-size: 14px;font-family: Tahoma;
+              }
+              button {
+                  background-color: #545454 !important;border: none;font-weight: bold;font-family: sans-serif;color: white;padding: 10px 30px;margin: 1rem auto;text-align: center;border-radius: 4px;cursor: pointer;
+              }
+              p {
+                  color: #545454;font-size: 14px;font-family: Tahoma;width: 100%;
+              }
+              p a {
+                  font-weight: bold;color: #e2d7d7 !important;background-color: #1c1f2b;padding: 12px 38px;
+                  font-family: Tahoma;font-size: 14px;margin: 2rem auto;text-align: center;border-radius: 4px;
+              }
+          </style>
+          </head>
+          <body>
+            <div>
+              <p>Hello <span> ${username},</span> you have signed up with TafaXtra. </p>
+              <p>Confirm your email with the link below to have access to our platform <br/><br><br>
+                <a href="http:localhost:3000/email/verify/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
+              </p>
+            </div>
+          </body>
+        </html>`,
+    }
     
-  //   const sender = transporter.sendMail(mailOptions);
-  //   if(sender){
-  //     console.log("Message sent: %s", sender.messageId);
-  //     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-  //     // Preview only available when sending through an Ethereal account
-  //     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
-  //     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-  //   }
-  // }
-
-
-  // const verificationSuccess = (_id,username,email) => {
+    const sender = transporter.sendMail(mailOptions);
+    if(sender){
+      console.log("Message sent: %s", sender.messageId);
+      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
       
-  //   const currentUrl = "http://localhost:5000/";
-  //   const mailOptions = {
-  //     from: process.env.AUTH_EMAIL,
-  //     to: email,
-  //     subject: "Email Verificaton Success",
-  //     html: `<div><p>Hello ${username}, you have signed up with PALEGO, the best crypto trading bot. Thank you for tusting us with you funds and we will not disappoint</p>
-  //     <p>Confirm your email with the link below to have access to our platform <br/>
-  //       <a href=${currentUrl+"user/verify/"+_id+"/"+emailCode}>Confirm Email</a>
-  //     </p>
-  //     </div>`,
-  //   }
-    
-  //   const sender = transporter.sendMail(mailOptions);
-  //   if(sender){
-  //     console.log("Message sent: %s", sender.messageId);
-  //     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+      // Preview only available when sending through an Ethereal account
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
+      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+      res.json({
+        message: username,
+      })
+    }
+  }
 
-  //     // Preview only available when sending through an Ethereal account
-  //     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
-  //     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-  //   }
-  // }
+
+  const verificationSuccess = (_id,username,email,res) => {
+      
+    const mailOptions = {
+      from: process.env.AUTH_EMAIL,
+      to: email,
+      subject: "Email Verificaton Success",
+      html: `<html>
+      <head>
+      <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+      <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+      <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+      <style type='text/css'>
+          body {
+              font-family: Tahoma;color: #545454;font-weight: 400;font-size: 14px;
+          }
+          .btn-c {
+              width: 100%;margin: 10px auto;text-align: center;cursor: pointer;
+          }
+          .btn-c a {
+              cursor: pointer !important;
+          }
+          .btn-c a button {
+              cursor: pointer !important;
+          }
+          span {
+            text-transform: capitalize;
+          }
+          div {
+              color: #545454;font-size: 14px;font-family: Tahoma;
+          }
+          button {
+              background-color: #545454 !important;border: none;font-weight: bold;font-family: sans-serif;color: white;padding: 10px 30px;margin: 1rem auto;text-align: center;border-radius: 4px;cursor: pointer;
+          }
+          p {
+              color: #545454;font-size: 14px;font-family: Tahoma;width: 100%;
+          }
+          p a {
+              font-weight: bold;color: #e2d7d7 !important;background-color: #1c1f2b;padding: 12px 38px;
+              font-family: Tahoma;font-size: 14px;margin: 2rem auto;text-align: center;border-radius: 4px;
+          }
+      </style>
+      </head>
+        <body>
+          <div>
+            <div>Hi <span>${username}</span></div><br>
+            <div>You've successfully activated your account, you can now sign in.</div><br><br>
+            <a href="http:localhost:3000/signin">Confirm Email</a>
+            <br><br>
+            <div>
+                <p>
+                  Best Regards,<br><br>TafaXtra
+                </p>
+            </div>
+          </div>
+        </body>
+      </html>`,
+    }
+    
+    const sender = transporter.sendMail(mailOptions);
+    if(sender){
+      console.log("Message sent: %s", sender.messageId);
+      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+      // Preview only available when sending through an Ethereal account
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
+      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    }
+  }
   
 
 //@description     Auth the user
@@ -119,7 +194,7 @@ dotenv.config();
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-
+  
   if (user && (await user.matchPassword(password))) {
     // get user id
     const userid = user._id;
@@ -342,7 +417,9 @@ const authUser = asyncHandler(async (req, res) => {
       });
     }
   } else {
-    res.status(401);
+    res.json({
+      message: "Invalid Email or Password",
+    });
     throw new Error("Invalid Email or Password");
   }
 });
@@ -390,7 +467,7 @@ const registerUser = asyncHandler(async (req, res) => {
     trxwalletaddressbase58,
     trxwalletaddresshex,
     trxwalletprivatekey,
-    emailcode: v4(),
+    emailcode: generateRanNum(),
     pic
   });
 
@@ -406,7 +483,7 @@ const registerUser = asyncHandler(async (req, res) => {
       });
 
       if(ref) {
-        const addrefId = User.updateOne(
+        const addrefId = await User.updateOne(
           {_id:user._id}, 
           {refId: ref._id },
           {multi:true}, 
@@ -428,25 +505,25 @@ const registerUser = asyncHandler(async (req, res) => {
     const email = user.email;
     const verifystatus = user.verified;
 
-    // if(verifystatus === false) {
-    //   sendverificationMail(_id,username,emailCode,email);
-    // }
+    if(verifystatus === false) {
+      sendverificationMail(_id,username,emailCode,email,res);
+    }
     
-    res.status(201).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      level: user.level,
-      tpin: user.tpin,
-      status: user.status,
-      activated: user.activated,
-      isAdmin: user.isAdmin,
-      trxwalletaddressbase58: user.trxwalletaddressbase58,
-      trxwalletaddresshex:user.trxwalletaddresshex,
-      bscwalletaddress: user.bscwalletaddress,
-      pic: user.pic,
-      token: generateToken(user._id),
-    });
+    // res.status(201).json({
+    //   _id: user._id,
+    //   username: user.username,
+    //   email: user.email,
+    //   level: user.level,
+    //   tpin: user.tpin,
+    //   status: user.status,
+    //   activated: user.activated,
+    //   isAdmin: user.isAdmin,
+    //   trxwalletaddressbase58: user.trxwalletaddressbase58,
+    //   trxwalletaddresshex:user.trxwalletaddresshex,
+    //   bscwalletaddress: user.bscwalletaddress,
+    //   pic: user.pic,
+    //   token: generateToken(user._id),
+    // });
 
   } else {
     res.status(400);
@@ -624,6 +701,33 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 
+const activateAccount = asyncHandler(async (req, res) => {
+  const {username, emailcode} = req.body;
+  console.log('req bodyy',username, emailcode)
+  
+  const activateAcc = await User.findOne({username});
+  console.log('u activate',activateAcc)
+
+  if (activateAcc) {
+    
+    activateAcc.verified = true;
+    
+    const activAcc = await activateAcc.save();
+    const email_code = activateAcc.emailcode;
+    if(email_code == emailcode) {
+      const activatedAcc = await User.updateOne(
+        {status:"Active"});
+
+      if(activatedAcc) {
+        verificationSuccess(_id, username, email,res);
+      }
+    }
+    } else {
+      res.status(404);
+      throw new Error("User Not Found");
+    }
+});
+
 
 const verifyUser = asyncHandler(async (req, res) => {
   const verifyuser = await User.findById(req.user._id);
@@ -636,7 +740,7 @@ const verifyUser = asyncHandler(async (req, res) => {
     const username = verifiedUser.username;
     const email = verifiedUser.email;
 
-      verificationSuccess(_id, username, email);
+      verificationSuccess(_id, username, email,res);
       res.json({
         _id: verifiedUser._id,
         username: verifiedUser.username,
@@ -651,10 +755,43 @@ const verifyUser = asyncHandler(async (req, res) => {
     }
 });
 
+const checkUserName = asyncHandler(async (req, res) => {
+  const {username} = req.body
+  
+  const verifyusername = await User.findOne({username});
+
+  if (verifyusername) {
+    verifyusername.verified = true;
+      res.json({
+        message: username + " already exits, choose another"
+      });
+    } else {
+      res.json({
+        message: username + " is ok"
+      });
+    }
+});
+
+const checkEmail = asyncHandler(async (req, res) => {
+  const {email} = req.body;
+  const verifyemail = await User.findOne({email});
+
+  if (verifyemail) {
+      res.json({
+        message: email + " already eExists, choose another",
+      });
+    } else {
+      res.json({
+        message: email + " is ok",
+      });
+    }
+});
+
 
 const resendverificationMail = asyncHandler(async (req, res) => {
-  const resendmailuser = await User.findById(req.user._id);
-
+  const {username} = req.body;
+  const resendmailuser = await User.findOne({username});
+  
   if (resendmailuser) {
     if(resendmailuser.verified === false) {
     
@@ -663,7 +800,7 @@ const resendverificationMail = asyncHandler(async (req, res) => {
         const emailCode = resendmailuser.emailcode;
         const email = resendmailuser.email;
 
-        sendverificationMail(_id,username,emailCode,email);
+        sendverificationMail(_id,username,emailCode,email,res);
 
         res.json({
           _id: resendmailuser._id,
@@ -684,9 +821,11 @@ const resendverificationMail = asyncHandler(async (req, res) => {
         });
       }
   } else {
-    res.status(404);
+    res.json({
+      message: "User not found"
+    });
     throw new Error("User Not Found");
   }
 });
 
-module.exports = { authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };
+module.exports = { activateAccount,checkEmail, checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };

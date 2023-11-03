@@ -30,7 +30,7 @@ const userSchema = mongoose.Schema(
       required: true
     },
     emailcode: {
-      type: String,
+      type: Number,
       required: true
     },
     isAdmin: {
