@@ -580,9 +580,11 @@ const registerUser = asyncHandler(async (req, res) => {
     trxwalletaddresshex,
     trxwalletprivatekey, pic 
   } = req.body;
-  
-  const userExists = await User.findOne({ email });
-  const usernameExists = await User.findOne({ username });
+  const _uname = trim(username);
+  const _email = trim(email);
+  const _pass = trim(password);
+  const userExists = await User.findOne({ _email });
+  const usernameExists = await User.findOne({ _uname });
   
   if (usernameExists) {
     res.status(404);
@@ -594,9 +596,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const user = await User.create({
-    username,
-    email,
-    password,
+    _uname,
+    _email,
+    _pass,
     level,
     tpin,
     status,
