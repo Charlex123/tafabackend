@@ -96,7 +96,7 @@ console.log('uuidv4',uuidv4())
             <div>
               <p>Hello <span> ${username},</span> you have signed up with TafaXtra. </p>
               <p>Confirm your email with the link below to have access to our platform <br/><br><br>
-                <a href="https://tafabackend.onrender.com/api/users/activateaccount/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
+                <a href="https://tafabackend.onrender.com/api/users/activateaccount/${emailCode}/${uuidv4()}">Confirm Email</a>
               </p>
             </div>
           </body>
@@ -113,6 +113,73 @@ console.log('uuidv4',uuidv4())
       // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
       res.json({
         message: username,
+      })
+    }
+  }
+
+  const re_sendverificationMail = (_id,username,emailCode,email,res) => {
+      
+    const mailOptions = {
+      from: process.env.AUTH_EMAIL,
+      to: email,
+      subject: "Confirm Your Email",
+      html: `<html>
+          <head>
+          <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+          <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+          <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+          <style type='text/css'>
+              body {
+                  font-family: Tahoma;color: #545454;font-weight: 400;font-size: 14px;
+              }
+              .btn-c {
+                  width: 100%;margin: 10px auto;text-align: center;cursor: pointer;
+              }
+              .btn-c a {
+                  cursor: pointer !important;
+              }
+              .btn-c a button {
+                  cursor: pointer !important;
+              }
+              span {
+                text-transform: capitalize;
+              }
+              div {
+                  color: #545454;font-size: 14px;font-family: Tahoma;
+              }
+              button {
+                  background-color: #545454 !important;border: none;font-weight: bold;font-family: sans-serif;color: white;padding: 10px 30px;margin: 1rem auto;text-align: center;border-radius: 4px;cursor: pointer;
+              }
+              p {
+                  color: #545454;font-size: 14px;font-family: Tahoma;width: 100%;
+              }
+              p a {
+                  font-weight: bold;color: #e2d7d7 !important;background-color: #1c1f2b;padding: 12px 38px;
+                  font-family: Tahoma;font-size: 14px;margin: 2rem auto;text-align: center;border-radius: 4px;
+              }
+          </style>
+          </head>
+          <body>
+            <div>
+              <p>Hello <span> ${username},</span> you have signed up with TafaXtra. </p>
+              <p>Confirm your email with the link below to have access to our platform <br/><br><br>
+                <a href="https://tafabackend.onrender.com/api/users/activateaccount/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
+              </p>
+            </div>
+          </body>
+        </html>`,
+    }
+    
+    const sender = transporter.sendMail(mailOptions);
+    if(sender){
+      console.log("Message sent: %s", sender.messageId);
+      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+      
+      // Preview only available when sending through an Ethereal account
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
+      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+      res.json({
+        message: "Activation code email resend success",
       })
     }
   }
@@ -769,10 +836,10 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 
 const activateAccount = asyncHandler(async (req, res) => {
-  const username = req.params.username;
+  // const username = req.params.username;
   const email__code = req.params.emailcode;
   
-  const activateAcc = await User.findOne({username});
+  const activateAcc = await User.findOne({email__code});
 
   if (activateAcc) {
     
@@ -781,6 +848,7 @@ const activateAccount = asyncHandler(async (req, res) => {
     const activAcc = await activateAcc.save();
     const email = activAcc.email;
     const email_code = activateAcc.emailcode;
+    const username = activateAcc.username;
     if(email_code == email__code) {
       const activatedAcc = await User.updateOne(
         {status:"Active"});
@@ -882,11 +950,8 @@ const resendverificationMail = asyncHandler(async (req, res) => {
         const emailCode = resendmailuser.emailcode;
         const email = resendmailuser.email;
 
-        sendverificationMail(_id,username,emailCode,email,res);
+        re_sendverificationMail(_id,username,emailCode,email,res);
 
-        res.json({
-          message: "Email resend success !!!"
-        });
       }else {
         res.json({
           _id: resendmailuser._id,

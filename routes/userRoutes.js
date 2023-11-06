@@ -20,7 +20,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/verify", verifyUser);
-router.get("/activateaccount/:username/:emailcode/:uuid", activateAccount);
+router.get("/activateaccount/:emailcode/:uuid", activateAccount);
 router.post("/checkemail", checkEmail);
 router.post("/checkforgotemail", checkForgotEmail);
 router.post("/checkusername", checkUserName);
