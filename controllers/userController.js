@@ -885,12 +885,7 @@ const resendverificationMail = asyncHandler(async (req, res) => {
         sendverificationMail(_id,username,emailCode,email,res);
 
         res.json({
-          _id: resendmailuser._id,
-          username: resendmailuser.username,
-          email: resendmailuser.email,
-          pic: resendmailuser.pic,
-          isAdmin: resendmailuser.isAdmin,
-          token: generateToken(resendmailuser._id),
+          message: "Email resend success !!!"
         });
       }else {
         res.json({
