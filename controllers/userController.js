@@ -850,7 +850,7 @@ const activateAccount = asyncHandler(async (req, res) => {
     const email_code = activateAcc.emailcode;
     if(email_code == email__code) {
       const activatedAcc = await User.updateOne(
-        {status:"Active"});
+        {username:username}, { $set: {status: "Active"}});
 
       if(activatedAcc) {
         verificationSuccess(username, email, res);
