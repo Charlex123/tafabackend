@@ -96,7 +96,7 @@ console.log('uuidv4',uuidv4())
             <div>
               <p>Hello <span> ${username},</span> you have signed up with TafaXtra. </p>
               <p>Confirm your email with the link below to have access to our platform <br/><br><br>
-                <a href="http:localhost:3000/email/verify/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
+                <a href="http:localhost:7000/api/users/activateaccount/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
               </p>
             </div>
           </body>
@@ -118,7 +118,7 @@ console.log('uuidv4',uuidv4())
   }
 
 
-  const verificationSuccess = (_id,username,email,res) => {
+  const verificationSuccess = (username,email, res) => {
       
     const mailOptions = {
       from: process.env.AUTH_EMAIL,
@@ -162,10 +162,10 @@ console.log('uuidv4',uuidv4())
       </head>
         <body>
           <div>
-            <div>Hi <span>${username}</span></div><br>
+            <div>Hi <span>${username}</span>,</div><br>
             <div>You've successfully activated your account, you can now sign in.</div><br><br>
             <a href="http:localhost:3000/signin">Confirm Email</a>
-            <br><br>
+            <br>
             <div>
                 <p>
                   Best Regards,<br><br>TafaXtra
@@ -180,13 +180,84 @@ console.log('uuidv4',uuidv4())
     if(sender){
       console.log("Message sent: %s", sender.messageId);
       // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
+      res.redirect(`http://localhost:3000/accountactivatestatus/${username}`)
       // Preview only available when sending through an Ethereal account
       console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
       // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
     }
   }
   
+
+  const sendresetpasswordEmail = (username,email, res) => {
+      
+    const mailOptions = {
+      from: process.env.AUTH_EMAIL,
+      to: email,
+      subject: "Reset Password Success",
+      html: `<html>
+      <head>
+      <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+      <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+      <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+      <style type='text/css'>
+          body {
+              font-family: Tahoma;color: #545454;font-weight: 400;font-size: 14px;
+          }
+          .btn-c {
+              width: 100%;margin: 10px auto;text-align: center;cursor: pointer;
+          }
+          .btn-c a {
+              cursor: pointer !important;
+          }
+          .btn-c a button {
+              cursor: pointer !important;
+          }
+          span {
+            text-transform: capitalize;
+          }
+          div {
+              color: #545454;font-size: 14px;font-family: Tahoma;
+          }
+          button {
+              background-color: #545454 !important;border: none;font-weight: bold;font-family: sans-serif;color: white;padding: 10px 30px;margin: 1rem auto;text-align: center;border-radius: 4px;cursor: pointer;
+          }
+          p {
+              color: #545454;font-size: 14px;font-family: Tahoma;width: 100%;
+          }
+          p a {
+              font-weight: bold;color: #e2d7d7 !important;background-color: #1c1f2b;padding: 12px 38px;
+              font-family: Tahoma;font-size: 14px;margin: 2rem auto;text-align: center;border-radius: 4px;
+          }
+      </style>
+      </head>
+        <body>
+          <div>
+            <div>Hi <span>${username}</span>,</div><br>
+            <div>You've successfully reset your success</div>
+            <br>
+            <div>
+                <p>
+                  Best Regards,<br>TafaXtra
+                </p>
+            </div>
+          </div>
+        </body>
+      </html>`,
+    }
+    
+    const sender = transporter.sendMail(mailOptions);
+    if(sender){
+      console.log("Message sent: %s", sender.messageId);
+      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+      res.json({
+        message:"success"
+      })
+      // Preview only available when sending through an Ethereal account
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
+      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    }
+  }
+
 
 //@description     Auth the user
 //@route           POST /api/users/login
@@ -679,47 +750,43 @@ const updateAssetWithdrawalStatus = asyncHandler(async (req, res) => {
 
 
 const resetPassword = asyncHandler(async (req, res) => {
-    const userid = req.body.userid;
-    const user = await User.findById(userid);
+    const email = req.body.email;
+    const user = await User.findOne({email});
     if (user) {
       user.password = req.body.newpassword;
       
       const updatedUser = await user.save();
-
-      res.json({
-        _id: updatedUser._id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        pic: updatedUser.pic,
-        isAdmin: updatedUser.isAdmin,
-        token: generateToken(updatedUser._id),
-      });
+      const username = updatedUser.username;
+      sendresetpasswordEmail(username,email,res)
+      
     } else {
-      res.status(404);
+      res.json({
+        message: "user not found"
+      });
       throw new Error("User Not Found");
     }
 });
 
 
 const activateAccount = asyncHandler(async (req, res) => {
-  const {username, emailcode} = req.body;
-  console.log('req bodyy',username, emailcode)
+  const username = req.params.username;
+  const email__code = req.params.emailcode;
   
   const activateAcc = await User.findOne({username});
-  console.log('u activate',activateAcc)
 
   if (activateAcc) {
     
     activateAcc.verified = true;
     
     const activAcc = await activateAcc.save();
+    const email = activAcc.email;
     const email_code = activateAcc.emailcode;
-    if(email_code == emailcode) {
+    if(email_code == email__code) {
       const activatedAcc = await User.updateOne(
         {status:"Active"});
 
       if(activatedAcc) {
-        verificationSuccess(_id, username, email,res);
+        verificationSuccess(username, email, res);
       }
     }
     } else {
@@ -740,7 +807,7 @@ const verifyUser = asyncHandler(async (req, res) => {
     const username = verifiedUser.username;
     const email = verifiedUser.email;
 
-      verificationSuccess(_id, username, email,res);
+      verificationSuccess(username, email, res);
       res.json({
         _id: verifiedUser._id,
         username: verifiedUser.username,
@@ -787,6 +854,21 @@ const checkEmail = asyncHandler(async (req, res) => {
     }
 });
 
+const checkForgotEmail = asyncHandler(async (req, res) => {
+  const {email} = req.body;
+  const verifyemail = await User.findOne({email});
+
+  if (verifyemail) {
+      res.json({
+        message: email + " found, enter new password",
+      });
+    } else {
+      res.json({
+        message: "Email not found, enter correct email",
+      });
+    }
+});
+
 
 const resendverificationMail = asyncHandler(async (req, res) => {
   const {username} = req.body;
@@ -828,4 +910,4 @@ const resendverificationMail = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { activateAccount,checkEmail, checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };
+module.exports = { activateAccount,checkEmail, checkForgotEmail,checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };

@@ -12,15 +12,17 @@ const {
   resetPassword,
   checkEmail,
   checkUserName,
-  activateAccount
+  activateAccount,
+  checkForgotEmail
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/verify", verifyUser);
-router.post("/activateaccount", activateAccount);
+router.get("/activateaccount/:username/:emailcode/:uuid", activateAccount);
 router.post("/checkemail", checkEmail);
+router.post("/checkforgotemail", checkForgotEmail);
 router.post("/checkusername", checkUserName);
 router.post("/resendverifyemail", resendverificationMail);
 router.post("/resetpassword", resetPassword);
