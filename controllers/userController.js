@@ -247,7 +247,7 @@ console.log('uuidv4',uuidv4())
     if(sender){
       console.log("Message sent: %s", sender.messageId);
       // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-      res.redirect(`https://tafabackend.onrender.com/accountactivatestatus/${username}`)
+      res.redirect(`https://tafafrontend.vercel.app/accountactivatestatus/${username}`)
       // Preview only available when sending through an Ethereal account
       console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
       // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
@@ -836,10 +836,10 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 
 const activateAccount = asyncHandler(async (req, res) => {
-  // const username = req.params.username;
+  const username = req.params.username;
   const email__code = req.params.emailcode;
   
-  const activateAcc = await User.findOne({email__code});
+  const activateAcc = await User.findOne({username});
 
   if (activateAcc) {
     
@@ -848,7 +848,6 @@ const activateAccount = asyncHandler(async (req, res) => {
     const activAcc = await activateAcc.save();
     const email = activAcc.email;
     const email_code = activateAcc.emailcode;
-    const username = activateAcc.username;
     if(email_code == email__code) {
       const activatedAcc = await User.updateOne(
         {status:"Active"});
