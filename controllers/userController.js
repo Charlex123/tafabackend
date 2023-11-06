@@ -96,7 +96,7 @@ console.log('uuidv4',uuidv4())
             <div>
               <p>Hello <span> ${username},</span> you have signed up with TafaXtra. </p>
               <p>Confirm your email with the link below to have access to our platform <br/><br><br>
-                <a href="http:localhost:7000/api/users/activateaccount/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
+                <a href="https://tafabackend.onrender.com/api/users/activateaccount/${username}/${emailCode}/${uuidv4()}">Confirm Email</a>
               </p>
             </div>
           </body>
@@ -164,7 +164,7 @@ console.log('uuidv4',uuidv4())
           <div>
             <div>Hi <span>${username}</span>,</div><br>
             <div>You've successfully activated your account, you can now sign in.</div><br><br>
-            <a href="http:localhost:3000/signin">Confirm Email</a>
+            <a href="https://tafafrontend.vercel.app/signin">Confirm Email</a>
             <br>
             <div>
                 <p>
