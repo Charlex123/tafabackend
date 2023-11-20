@@ -4,6 +4,7 @@ const Referral = require("../models/referralModel.js");
 const Assets = require("../models/assetsModel.js");
 const generateToken = require("../utils/generateToken.js");
 const generateRanNum = require("../utils/generateRanNum.js");
+const generateUid = require("../utils/generateUid.js");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
@@ -231,7 +232,7 @@ console.log('uuidv4',uuidv4())
           <div>
             <div>Hi <span>${username}</span>,</div><br>
             <div>You've successfully activated your account, you can now sign in.</div><br><br>
-            <a href="https://tafafrontend.vercel.app/signin">Confirm Email</a>
+            <a href="https://tafaextra.io/signin">Confirm Email</a>
             <br>
             <div>
                 <p>
@@ -247,7 +248,7 @@ console.log('uuidv4',uuidv4())
     if(sender){
       console.log("Message sent: %s", sender.messageId);
       // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-      res.redirect(`https://tafafrontend.vercel.app/accountactivatestatus/${username}`)
+      res.redirect(`https://tafaextra.io/accountactivatestatus/${username}`)
       // Preview only available when sending through an Ethereal account
       console.log("Preview URL: %s", nodemailer.getTestMessageUrl(sender));
       // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
@@ -335,225 +336,234 @@ const authUser = asyncHandler(async (req, res) => {
   
   if (user && (await user.matchPassword(password))) {
     // get user id
-    const userid = user._id;
+    const userId = user.userId;
     //check if user has a referral
-    const referral = await Referral.find({ sponsorId: user._id });
-    const getrefsponsor = await Referral.find({ userId: user._id });
-    const asset = await Assets.find({ userId: user._id });
+    const referral = await Referral.find({ sponsorId: userId });
+    const getrefsponsor = await Referral.find({ user_objId: user._id });
     // Map documents returned by `data` events
-   
-    if(referral.length != 0 && asset.length != 0 && getrefsponsor.length !=0) {
-      const sponsorid = getrefsponsor[0].sponsorId;
-      console.log(sponsorid)
-      if(sponsorid) {
-        const getsponsor = await User.find({_id:sponsorid});
-        const upline = getsponsor[0].username;
-        const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
-        // const getdownlinesId = await Referral.find(user._id).populate({
-        //   path:"refId", model:"referrals"
-        // });
-            res.status(201).json({
-              _id: user._id,
-              username: user.username,
-              email: user.email,
-              level: user.level,
-              tpin: user.tpin,
-              status: user.status,
-              activated: user.activated,
-              sponsorId: sponsorid,
-              directdownlines: referral,
-              asset: asset,
-              noofdirectdownlines: noofDirectDownlines,
-              sponsor: upline,
-              trxwalletaddressbase58: user.trxwalletaddressbase58,
-              trxwalletaddresshex:user.trxwalletaddresshex,
-              bscwalletaddress: user.bscwalletaddress,
-              isAdmin: user.isAdmin,
-              pic: user.pic,
-              token: generateToken(user._id)
-            });
-      }
-      
-    }else if(referral.length != 0 && getrefsponsor.length != 0 && asset.length === 0) {
-      const sponsorid = getrefsponsor[0].sponsorId;
-      if(sponsorid) {
-        const getsponsor = await User.find({_id:sponsorid});
-        const upline = getsponsor[0].username;
-        const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
-        // const followedUsers = await User.find({ _id: { $in: followedIDs } });
-        // const getusersuplines = await User.find(user._id).populate({
-        //   path:"refId", model:"referrals"
-        // });
-            res.status(201).json({
-              _id: user._id,
-              username: user.username,
-              email: user.email,
-              level: user.level,
-              tpin: user.tpin,
-              status: user.status,
-              activated: user.activated,
-              sponsorId: sponsorid,
-              directdownlines: referral,
-              noofdirectdownlines: noofDirectDownlines,
-              sponsor: upline,
-              trxwalletaddressbase58: user.trxwalletaddressbase58,
-              trxwalletaddresshex:user.trxwalletaddresshex,
-              bscwalletaddress: user.bscwalletaddress,
-              isAdmin: user.isAdmin,
-              pic: user.pic,
-              token: generateToken(user._id)
-            });
-      }
-      
-    }else if(referral.length != 0 && asset.length != 0) {
-     
-      const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
-      const secondgenDownlineIds = referral.map(key => (
-        key.userId
-      ));
-      
-      const secondgenDownlines = await Referral.find().where('sponsorId').in(secondgenDownlineIds);
-      // const getusersuplines = await User.find(user._id).populate({
-      //   path:"refId", model:"referrals"
-      // });
-          res.status(201).json({
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            level: user.level,
-            tpin: user.tpin,
-            status: user.status,
-            asset: asset,
-            activated: user.activated,
-            directdownlines: referral,
-            nofodirectdownlines: noofDirectDownlines,
-            trxwalletaddressbase58: user.trxwalletaddressbase58,
-            trxwalletaddresshex:user.trxwalletaddresshex,
-            bscwalletaddress: user.bscwalletaddress,
-            isAdmin: user.isAdmin,
-            pic: user.pic,
-            token: generateToken(user._id),
-          });
-    
-  }else if(referral.length != 0 && asset.length === 0) {
-     
-        const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
-        // const getusersuplines = await User.find(user._id).populate({
-        //   path:"refId", model:"referrals"
-        // });
-        const secondgenDownlineIds = referral.map(key => (
-          key.userId
-        ));
-        if(secondgenDownlineIds.length != 0) {
-          const secondgenDownlines = await Referral.find().where('sponsorId').in(secondgenDownlineIds);
-          const noofsecondgenDownlines = secondgenDownlineIds.length;
-
-          const thirdgenDownlineIds = secondgenDownlines.map(key =>(
-            key.userId
-          ))
-
-          if(thirdgenDownlineIds.length != 0) {
-            const thirdgenDownlines = await Referral.find().where('sponsorId').in(thirdgenDownlineIds);
-            const noofthirdgenDownlines = thirdgenDownlineIds.length;
-
-            res.status(201).json({
-              _id: user._id,
-              username: user.username,
-              email: user.email,
-              level: user.level,
-              tpin: user.tpin,
-              status: user.status,
-              activated: user.activated,
-              directdownlines: referral,
-              nofodirectdownlines: noofDirectDownlines,
-              secondgenDownlines: secondgenDownlines,
-              noofDirectDownlines: noofsecondgenDownlines,
-              thirdgenDownlines: thirdgenDownlines,
-              noofthirdgenDownlines: noofthirdgenDownlines,
-              trxwalletaddressbase58: user.trxwalletaddressbase58,
-              trxwalletaddresshex:user.trxwalletaddresshex,
-              bscwalletaddress: user.bscwalletaddress,
-              isAdmin: user.isAdmin,
-              pic: user.pic,
-              token: generateToken(user._id),
-            });
-          }
-
-          res.status(201).json({
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            level: user.level,
-            tpin: user.tpin,
-            status: user.status,
-            activated: user.activated,
-            directdownlines: referral,
-            nofodirectdownlines: noofDirectDownlines,
-            secondgenDownlines: secondgenDownlines,
-            noofDirectDownlines: noofsecondgenDownlines,
-            trxwalletaddressbase58: user.trxwalletaddressbase58,
-            trxwalletaddresshex:user.trxwalletaddresshex,
-            bscwalletaddress: user.bscwalletaddress,
-            isAdmin: user.isAdmin,
-            pic: user.pic,
-            token: generateToken(user._id),
-          });
-        }
-        
-            res.status(201).json({
-              _id: user._id,
-              username: user.username,
-              email: user.email,
-              level: user.level,
-              tpin: user.tpin,
-              status: user.status,
-              activated: user.activated,
-              directdownlines: referral,
-              nofodirectdownlines: noofDirectDownlines,
-              trxwalletaddressbase58: user.trxwalletaddressbase58,
-              trxwalletaddresshex:user.trxwalletaddresshex,
-              bscwalletaddress: user.bscwalletaddress,
-              isAdmin: user.isAdmin,
-              pic: user.pic,
-              token: generateToken(user._id),
-            });
-      
-    }else if(referral.length === 0 && asset.length != 0) {
-            res.status(201).json({
-              _id: user._id,
-              username: user.username,
-              email: user.email,
-              level: user.level,
-              tpin: user.tpin,
-              status: user.status,
-              activated: user.activated,
-              asset: asset,
-              trxwalletaddressbase58: user.trxwalletaddressbase58,
-              trxwalletaddresshex:user.trxwalletaddresshex,
-              bscwalletaddress: user.bscwalletaddress,
-              isAdmin: user.isAdmin,
-              pic: user.pic,
-              token: generateToken(user._id),
-            });
-      
-    }else {
-      res.status(201).json({
+    res.status(201).json({
         _id: user._id,
         username: user.username,
+        userId: user.userId,
         email: user.email,
         level: user.level,
         tpin: user.tpin,
         status: user.status,
         activated: user.activated,
-        asset: asset,
         isAdmin: user.isAdmin,
-        trxwalletaddressbase58: user.trxwalletaddressbase58,
-        trxwalletaddresshex:user.trxwalletaddresshex,
         bscwalletaddress: user.bscwalletaddress,
         pic: user.pic,
         token: generateToken(user._id),
       });
-    }
+  //   if(referral.length != 0 && getrefsponsor.length !=0) {
+  //     const sponsorid = getrefsponsor[0].sponsorId;
+  //     console.log(sponsorid)
+  //     if(sponsorid) {
+  //       const getsponsor = await User.find({_id:sponsorid});
+  //       const upline = getsponsor[0].username;
+  //       const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
+  //       // const getdownlinesId = await Referral.find(user._id).populate({
+  //       //   path:"refId", model:"referrals"
+  //       // });
+  //           res.status(201).json({
+  //             _id: user._id,
+  //             username: user.username,
+  //             email: user.email,
+  //             level: user.level,
+  //             tpin: user.tpin,
+  //             status: user.status,
+  //             activated: user.activated,
+  //             sponsorId: sponsorid,
+  //             directdownlines: referral,
+  //             noofdirectdownlines: noofDirectDownlines,
+  //             sponsor: upline,
+  //             trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //             trxwalletaddresshex:user.trxwalletaddresshex,
+  //             bscwalletaddress: user.bscwalletaddress,
+  //             isAdmin: user.isAdmin,
+  //             pic: user.pic,
+  //             token: generateToken(user._id)
+  //           });
+  //     }
+      
+  //   }else if(referral.length != 0 && getrefsponsor.length != 0 && asset.length === 0) {
+  //     const sponsorid = getrefsponsor[0].sponsorId;
+  //     if(sponsorid) {
+  //       const getsponsor = await User.find({_id:sponsorid});
+  //       const upline = getsponsor[0].username;
+  //       const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
+  //       // const followedUsers = await User.find({ _id: { $in: followedIDs } });
+  //       // const getusersuplines = await User.find(user._id).populate({
+  //       //   path:"refId", model:"referrals"
+  //       // });
+  //           res.status(201).json({
+  //             _id: user._id,
+  //             username: user.username,
+  //             email: user.email,
+  //             level: user.level,
+  //             tpin: user.tpin,
+  //             status: user.status,
+  //             activated: user.activated,
+  //             sponsorId: sponsorid,
+  //             directdownlines: referral,
+  //             noofdirectdownlines: noofDirectDownlines,
+  //             sponsor: upline,
+  //             trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //             trxwalletaddresshex:user.trxwalletaddresshex,
+  //             bscwalletaddress: user.bscwalletaddress,
+  //             isAdmin: user.isAdmin,
+  //             pic: user.pic,
+  //             token: generateToken(user._id)
+  //           });
+  //     }
+      
+  //   }else if(referral.length != 0 && asset.length != 0) {
+     
+  //     const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
+  //     const secondgenDownlineIds = referral.map(key => (
+  //       key.userId
+  //     ));
+      
+  //     const secondgenDownlines = await Referral.find().where('sponsorId').in(secondgenDownlineIds);
+  //     // const getusersuplines = await User.find(user._id).populate({
+  //     //   path:"refId", model:"referrals"
+  //     // });
+  //         res.status(201).json({
+  //           _id: user._id,
+  //           username: user.username,
+  //           email: user.email,
+  //           level: user.level,
+  //           tpin: user.tpin,
+  //           status: user.status,
+  //           asset: asset,
+  //           activated: user.activated,
+  //           directdownlines: referral,
+  //           nofodirectdownlines: noofDirectDownlines,
+  //           trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //           trxwalletaddresshex:user.trxwalletaddresshex,
+  //           bscwalletaddress: user.bscwalletaddress,
+  //           isAdmin: user.isAdmin,
+  //           pic: user.pic,
+  //           token: generateToken(user._id),
+  //         });
+    
+  // }else if(referral.length != 0 && asset.length === 0) {
+     
+  //       const noofDirectDownlines = await Referral.countDocuments({sponsorId: userid});
+  //       // const getusersuplines = await User.find(user._id).populate({
+  //       //   path:"refId", model:"referrals"
+  //       // });
+  //       const secondgenDownlineIds = referral.map(key => (
+  //         key.userId
+  //       ));
+  //       if(secondgenDownlineIds.length != 0) {
+  //         const secondgenDownlines = await Referral.find().where('sponsorId').in(secondgenDownlineIds);
+  //         const noofsecondgenDownlines = secondgenDownlineIds.length;
+
+  //         const thirdgenDownlineIds = secondgenDownlines.map(key =>(
+  //           key.userId
+  //         ))
+
+  //         if(thirdgenDownlineIds.length != 0) {
+  //           const thirdgenDownlines = await Referral.find().where('sponsorId').in(thirdgenDownlineIds);
+  //           const noofthirdgenDownlines = thirdgenDownlineIds.length;
+
+  //           res.status(201).json({
+  //             _id: user._id,
+  //             username: user.username,
+  //             email: user.email,
+  //             level: user.level,
+  //             tpin: user.tpin,
+  //             status: user.status,
+  //             activated: user.activated,
+  //             directdownlines: referral,
+  //             nofodirectdownlines: noofDirectDownlines,
+  //             secondgenDownlines: secondgenDownlines,
+  //             noofDirectDownlines: noofsecondgenDownlines,
+  //             thirdgenDownlines: thirdgenDownlines,
+  //             noofthirdgenDownlines: noofthirdgenDownlines,
+  //             trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //             trxwalletaddresshex:user.trxwalletaddresshex,
+  //             bscwalletaddress: user.bscwalletaddress,
+  //             isAdmin: user.isAdmin,
+  //             pic: user.pic,
+  //             token: generateToken(user._id),
+  //           });
+  //         }
+
+  //         res.status(201).json({
+  //           _id: user._id,
+  //           username: user.username,
+  //           email: user.email,
+  //           level: user.level,
+  //           tpin: user.tpin,
+  //           status: user.status,
+  //           activated: user.activated,
+  //           directdownlines: referral,
+  //           nofodirectdownlines: noofDirectDownlines,
+  //           secondgenDownlines: secondgenDownlines,
+  //           noofDirectDownlines: noofsecondgenDownlines,
+  //           trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //           trxwalletaddresshex:user.trxwalletaddresshex,
+  //           bscwalletaddress: user.bscwalletaddress,
+  //           isAdmin: user.isAdmin,
+  //           pic: user.pic,
+  //           token: generateToken(user._id),
+  //         });
+  //       }
+        
+  //           res.status(201).json({
+  //             _id: user._id,
+  //             username: user.username,
+  //             email: user.email,
+  //             level: user.level,
+  //             tpin: user.tpin,
+  //             status: user.status,
+  //             activated: user.activated,
+  //             directdownlines: referral,
+  //             nofodirectdownlines: noofDirectDownlines,
+  //             trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //             trxwalletaddresshex:user.trxwalletaddresshex,
+  //             bscwalletaddress: user.bscwalletaddress,
+  //             isAdmin: user.isAdmin,
+  //             pic: user.pic,
+  //             token: generateToken(user._id),
+  //           });
+      
+  //   }else if(referral.length === 0 && asset.length != 0) {
+  //           res.status(201).json({
+  //             _id: user._id,
+  //             username: user.username,
+  //             email: user.email,
+  //             level: user.level,
+  //             tpin: user.tpin,
+  //             status: user.status,
+  //             activated: user.activated,
+  //             asset: asset,
+  //             trxwalletaddressbase58: user.trxwalletaddressbase58,
+  //             trxwalletaddresshex:user.trxwalletaddresshex,
+  //             bscwalletaddress: user.bscwalletaddress,
+  //             isAdmin: user.isAdmin,
+  //             pic: user.pic,
+  //             token: generateToken(user._id),
+  //           });
+      
+  //   }else {
+  //     res.status(201).json({
+  //       _id: user._id,
+  //       username: user.username,
+  //       userId: user.userId,
+  //       email: user.email,
+  //       level: user.level,
+  //       tpin: user.tpin,
+  //       status: user.status,
+  //       activated: user.activated,
+  //       isAdmin: user.isAdmin,
+  //       bscwalletaddress: user.bscwalletaddress,
+  //       pic: user.pic,
+  //       token: generateToken(user._id),
+  //     });
+  //   }
   } else {
     res.json({
       message: "Invalid Email or Password",
@@ -594,6 +604,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     username,
+    userId: generateUid(),
     email,
     password,
     level,
@@ -611,28 +622,15 @@ const registerUser = asyncHandler(async (req, res) => {
   if (user) {
 
     const sponsorId = req.body.sponsorId;
+    console.log('sponsorId found',sponsorId)
+    const refGeneration = "First";
     if(sponsorId) {
 
-      const { sponsorId, refBonus, totalrefBonus, withdrawnRefBonus } = req.body;
-      const userId = user._id;
+      const user_objId = user._id;
       const ref = await Referral.create({
-        sponsorId,userId,refBonus,totalrefBonus,withdrawnRefBonus
+        sponsorId,user_objId,refGeneration
       });
 
-      if(ref) {
-        const addrefId = await User.updateOne(
-          {_id:user._id}, 
-          {refId: ref._id },
-          {multi:true}, 
-            function(err, numberAffected){  
-            });
-        if(addrefId) {
-
-        }
-        
-      }
-      
-      
     }else {
 
     }

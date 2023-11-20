@@ -8,6 +8,11 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true
     },
+    userId: {
+      type: Number,
+      required: true,
+      unique: true
+    },
     email: {
       type: String,
       required: true,
@@ -55,15 +60,6 @@ const userSchema = mongoose.Schema(
       type: String
     },
     bscwalletprivatekey: {
-      type: String
-    },
-    trxwalletaddressbase58: {
-      type: String
-    },
-    trxwalletaddresshex: {
-      type: String
-    },
-    trxwalletprivatekey: {
       type: String
     },
     updatedAt: {

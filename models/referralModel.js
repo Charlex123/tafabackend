@@ -3,10 +3,10 @@ const Schema = require("mongoose");
 const referralSchema = new mongoose.Schema(
   {
     sponsorId: {
-      type: String,
+      type: Number,
       required: true
     },
-    userId: {
+    user_objId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true
     },
@@ -14,17 +14,8 @@ const referralSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    refBonus: {
-      type: Number,
-      required: true
-    },
-    totalrefBonus: {
-      type: Number,
-      required: true
-    },
-    withdrawnRefBonus: {
-      type: Number,
-      required: true
+    refGeneration: {
+      type: String
     },
     createdAt : {
         type: Date,
