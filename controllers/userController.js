@@ -338,9 +338,6 @@ const authUser = asyncHandler(async (req, res) => {
     // get user id
     const userId = user.userId;
     //check if user has a referral
-    const referral = await Referral.find({ sponsorId: userId });
-    const getrefsponsor = await Referral.find({ user_objId: user._id });
-    // Map documents returned by `data` events
     res.status(201).json({
         _id: user._id,
         username: user.username,
@@ -586,9 +583,7 @@ const registerUser = asyncHandler(async (req, res) => {
     status,
     bscwalletaddress,
     bscwalletprivatekey,
-    trxwalletaddressbase58,
-    trxwalletaddresshex,
-    trxwalletprivatekey, pic 
+    pic 
   } = req.body;
   const userExists = await User.findOne({ email });
   const usernameExists = await User.findOne({ username });
@@ -612,9 +607,6 @@ const registerUser = asyncHandler(async (req, res) => {
     status,
     bscwalletaddress,
     bscwalletprivatekey,
-    trxwalletaddressbase58,
-    trxwalletaddresshex,
-    trxwalletprivatekey,
     emailcode: generateRanNum(),
     pic
   });
@@ -625,12 +617,28 @@ const registerUser = asyncHandler(async (req, res) => {
     console.log('sponsorId found',sponsorId)
     const refGeneration = "First";
     if(sponsorId) {
-
+      // get sponsor objectId
+      const sponsorobjId = await User.findOne({userId:sponsorId})
+      console.log('sponsr deta', sponsorobjId)
       const user_objId = user._id;
+      const sponsor_objId = sponsorobjId._id;
+
       const ref = await Referral.create({
-        sponsorId,user_objId,refGeneration
+        sponsorId,sponsor_objId,user_objId,refGeneration
       });
 
+      if(ref) {
+        // check if sponsor has an upline
+        const addrefId = User.updateOne(
+          {_id:user._id}, 
+          {refId: ref._id },
+          {multi:true}, 
+            function(err, numberAffected){  
+            });
+        if(addrefId) {
+
+        }
+      }
     }else {
 
     }
@@ -666,6 +674,17 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+const getReferrals = asyncHandler(async (req, res) => {
+  const sponsorId = req.params.sponsorId;
+  console.log('sponsorId',sponsorId)
+  const noofDirectDownlines = await Referral.countDocuments({sponsorId: sponsorId});
+  const directrefs = await Referral.find({ sponsorId: sponsorId });
+
+  res.json({
+    refcount: noofDirectDownlines,
+    referrals:directrefs
+  })
+})
 
 const addAssets = asyncHandler(async (req, res) => {
   const { 
@@ -966,4 +985,4 @@ const resendverificationMail = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { activateAccount,checkEmail, checkForgotEmail,checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };
+module.exports = { getReferrals,activateAccount,checkEmail, checkForgotEmail,checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };

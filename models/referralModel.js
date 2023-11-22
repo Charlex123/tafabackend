@@ -2,12 +2,16 @@ const mongoose = require("mongoose");
 const Schema = require("mongoose");
 const referralSchema = new mongoose.Schema(
   {
+    user_objId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
     sponsorId: {
       type: Number,
       required: true
     },
-    user_objId: {
-      type: mongoose.Schema.Types.ObjectId,
+    sponsor_objId: {
+      type: String,
       required: true
     },
     activated: {
