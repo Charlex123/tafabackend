@@ -676,7 +676,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const getReferrals = asyncHandler(async (req, res) => {
   const sponsorId = req.params.sponsorId;
-  console.log('sponsorId',sponsorId)
+  
   const noofDirectDownlines = await Referral.countDocuments({sponsorId: sponsorId});
   const directrefs = await Referral.find({ sponsorId: sponsorId });
 
