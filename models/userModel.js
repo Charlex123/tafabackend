@@ -56,6 +56,12 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false
     },
+    walletaddress: {
+      type: String,
+    },
+    bscwalletaddress2: {
+      type: String,
+    },
     bscwalletaddress: {
       type: String
     },

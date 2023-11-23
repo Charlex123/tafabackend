@@ -878,6 +878,31 @@ const activateAccount = asyncHandler(async (req, res) => {
     }
 });
 
+const updateWalletAddress = asyncHandler(async (req, res) => {
+  const {walletaddress, username} = req.body;
+  const findUser = await User.findOne({username});
+  
+  if (findUser) {
+    
+    findUser.verified = true;
+    
+    const found_User = await findUser.save();
+    if(found_User) {
+      const foundUser = await User.updateOne(
+        {username:username}, { $set: {walletaddress: walletaddress}});
+
+      if(foundUser) {
+        console.log(' update wallet address users',username)
+        res.json({
+          message: "wallet update success",
+        });
+      }
+    }
+    } else {
+      res.json({message: "User not found"});
+    }
+});
+
 
 const verifyUser = asyncHandler(async (req, res) => {
   const verifyuser = await User.findById(req.user._id);
@@ -981,8 +1006,7 @@ const resendverificationMail = asyncHandler(async (req, res) => {
     res.json({
       message: "User not found"
     });
-    throw new Error("User Not Found");
   }
 });
 
-module.exports = { getReferrals,activateAccount,checkEmail, checkForgotEmail,checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };
+module.exports = { updateWalletAddress,getReferrals,activateAccount,checkEmail, checkForgotEmail,checkUserName, authUser, updateUserProfile, registerUser, verifyUser, assetDetails, resendverificationMail, resetPassword, addAssets, updateTransactionPin, updateAssetWithdrawalStatus };
