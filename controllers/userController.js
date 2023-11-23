@@ -892,7 +892,6 @@ const updateWalletAddress = asyncHandler(async (req, res) => {
         {username:username}, { $set: {walletaddress: walletaddress}});
 
       if(foundUser) {
-        console.log(' update wallet address users',username)
         res.json({
           message: "wallet update success",
         });
