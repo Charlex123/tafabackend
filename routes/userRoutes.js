@@ -15,14 +15,18 @@ const {
   activateAccount,
   checkForgotEmail,
   getReferrals,
-  updateWalletAddress
+  updateWalletAddress,
+  getSponsor,
+  getWalletAddress
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/verify", verifyUser);
+router.post("/getsponsorwalletaddress", getSponsor);
 router.post("/updatewalletaddress", updateWalletAddress);
+router.post("/getwalletaddress", getWalletAddress);
 router.get("/getreferrals/:sponsorId", getReferrals);
 router.get("/activateaccount/:username/:emailcode/:uuid", activateAccount);
 router.post("/checkemail", checkEmail);
